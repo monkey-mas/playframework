@@ -64,6 +64,22 @@ object ResultsSpec extends Specification {
       headers must havePair("X-Yop" -> "2")
     }
 
+    "support header removal" in {
+      val Result(ResponseHeader(_, headers, _), _) =
+        Ok("hello").as("text/html").withHeaders("Set-Cookie" -> "yes", "X-YOP" -> "1", "X-Yop" -> "2")
+
+      val a = Ok("hello").as("text/html").withHeaders("Set-Cookie" -> "yes", "X-YOP" -> "1", "X-Yop" -> "2")
+
+      headers.size must_== 2
+      headers must havePair("Set-Cookie" -> "yes")
+      headers must not havePair ("X-YOP" -> "1")
+      headers must havePair("X-Yop" -> "2")
+
+      val Result(ResponseHeader(_, headers2, _), _) =
+        a.removingFromHeader("Set-CooKie")
+      headers2 must not havePair ("Set-Cookie" -> "yes")
+    }
+
     "support date headers manipulation" in {
       val Result(ResponseHeader(_, headers, _), _) =
         Ok("hello").as("text/html").withDateHeaders(DATE ->

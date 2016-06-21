@@ -64,9 +64,16 @@ object ServerResultUtils {
         )
         originalErrorResult.copy(header = newHeader)
       }
-    } else if (!mayHaveEntity(result.header.status) && !result.body.isKnownEmpty) {
+    } else if (mustNotIncludeBody(result.header.status)) {
       cancelEntity(result.body)
-      Future.successful(result.copy(body = HttpEntity.Strict(ByteString.empty, result.body.contentType)))
+      val _result = {
+        val tmp = result.copy(body = HttpEntity.Strict(ByteString.empty, result.body.contentType))
+        if (result.header.status == Status.NO_CONTENT)
+          tmp.removingFromHeader("Content-Length")
+        else
+          tmp
+      }
+      Future.successful(_result)
     } else {
       Future.successful(result)
     }
@@ -129,6 +136,9 @@ object ServerResultUtils {
     }
 
   }
+
+  private def mustNotIncludeBody(status: Int) =
+    status == Status.NO_CONTENT || status == Status.NOT_MODIFIED
 
   private def mayHaveEntity(status: Int) =
     status != Status.NO_CONTENT && status != Status.NOT_MODIFIED

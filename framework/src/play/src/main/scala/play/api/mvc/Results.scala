@@ -80,9 +80,8 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
    * @param headers the headers to add to this result.
    * @return the new result
    */
-  def withHeaders(headers: (String, String)*): Result = {
+  def withHeaders(headers: (String, String)*): Result =
     copy(header = header.copy(headers = header.headers ++ headers))
-  }
 
   /**
    * Add a header with a DateTime formatted using the default http date format
@@ -245,6 +244,11 @@ case class Result(header: ResponseHeader, body: HttpEntity) {
    */
   def removingFromSession(keys: String*)(implicit request: RequestHeader): Result =
     withSession(new Session(session.data -- keys))
+
+  def removingFromHeader(keys: String*): Result = {
+    val _headers = keys.foldLeft(header.headers)((acc, k) => acc - k)
+    copy(header = header.copy(headers = _headers))
+  }
 
   override def toString = {
     "Result(" + header + ")"

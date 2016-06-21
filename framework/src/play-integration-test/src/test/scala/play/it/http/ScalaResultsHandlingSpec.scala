@@ -329,7 +329,7 @@ trait ScalaResultsHandlingSpec extends PlaySpecification with WsTestClient with 
           BasicRequest("PUT", "/", "HTTP/1.1", Map(), "")
         ).head
         response.body must beLeft("")
-        response.headers.get(CONTENT_LENGTH) must beOneOf(None, Some("0")) // Both header values are valid
+        response.headers.get(CONTENT_LENGTH) must beNone //beOneOf(None, Some("0")) // Both header values are valid
       }
 
     "not have a message body, nor a Content-Length, when a 304 response is returned" in withServer(
